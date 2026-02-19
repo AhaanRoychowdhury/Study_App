@@ -1,0 +1,262 @@
+import streamlit as st
+import random
+import time
+
+# -----------------------
+# POLYATOMIC IONS DATABASE
+# -----------------------
+polyatomic_ions = {
+    "1- Charge": {
+        "Acetate": "C2H3O2-",
+        "Bicarbonate": "HCO3-",
+        "Bromate": "BrO3-",
+        "Perchlorate": "ClO4-",
+        "Chlorate": "ClO3-",
+        "Chlorite": "ClO2-",
+        "Hypochlorite": "ClO-",
+        "Hydroxide": "OH-",
+        "Iodate": "IO3-",
+        "Nitrate": "NO3-",
+        "Nitrite": "NO2-",
+        "Permanganate": "MnO4-",
+        "Cyanide": "CN-",
+        "Thiocyanate": "SCN-"
+    },
+    "2- Charge": {
+        "Carbonate": "CO32-",
+        "Chromate": "CrO42-",
+        "Dichromate": "Cr2O72-",
+        "Oxalate": "C2O42-",
+        "Silicate": "SiO32-",
+        "Sulfate": "SO42-",
+        "Sulfite": "SO32-",
+        "Tartrate": "C4H4O62-",
+        "Thiosulfate": "S2O32-",
+        "Hydrogen Phosphate": "HPO42-"
+    },
+    "3- Charge": {
+        "Phosphate": "PO43-",
+        "Phosphite": "PO33-",
+        "Arsenate": "AsO43-"
+    },
+    "Miscellaneous": {
+        "Cadmium Ion": "Cd2+",
+        "Silver Ion": "Ag+",
+        "Zinc Ion": "Zn2+",
+        "Ammonium": "NH4+",
+        "Mercury (I)": "Hg22+",
+        "Mercury (II)": "Hg2+",
+        "Peroxide": "O22-",
+        "Superoxide": "O2-",
+        "Hydronium": "H3O+"
+    }
+}
+
+# -----------------------
+# SESSION STATE INIT
+# -----------------------
+defaults = {
+    "score": 0,
+    "total": 0,
+    "streak": 0,
+    "high_score": 0,
+    "wrong_count": 0,
+    "max_wrong": 3,
+    "question_id": 0,
+    "current_question": None,
+    "ask_name_to_formula": None,
+    "hint_mode": False,
+    "choices": None,
+    "available_ions": {},
+    "mode": None,
+    "hints_left": 3,
+    "timer": 0,
+    "start_time": 0,
+    "time_up": False,
+    "game_started": False
+}
+
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+# -----------------------
+# HELPER FUNCTIONS
+# -----------------------
+def select_ions():
+    st.sidebar.header("Select Ion Groups")
+    st.sidebar.markdown("Select groups and ions for the quiz.")
+    available = {}
+    for group_name, group_ions in polyatomic_ions.items():
+        group_selected = st.sidebar.checkbox(f"Include {group_name}", value=True)
+        if group_selected:
+            with st.sidebar.expander(group_name, expanded=True):
+                for ion_name, formula in group_ions.items():
+                    checked = st.checkbox(ion_name, value=True)
+                    if checked:
+                        available[ion_name] = formula
+    st.session_state.available_ions = available
+
+def new_question():
+    if not st.session_state.available_ions:
+        return
+    name, formula = random.choice(list(st.session_state.available_ions.items()))
+    st.session_state.current_question = (name, formula)
+    st.session_state.ask_name_to_formula = random.choice([True, False])
+    st.session_state.hint_mode = False
+    st.session_state.choices = None
+    st.session_state.question_id += 1
+    st.session_state.start_time = time.time()
+    st.session_state.time_up = False
+
+def split_formula_charge(formula):
+    """Return (formula_part, charge)"""
+    if formula[-1] in "+-":
+        return formula[:-1], formula[-1]
+    elif formula[-2:] in ["2-", "3-", "2+"]:
+        return formula[:-2], formula[-2:]
+    else:
+        return formula, ""
+
+def check_answer(formula_input, charge_input, used_hint=False):
+    if not st.session_state.current_question:
+        return
+
+    name, formula_full = st.session_state.current_question
+    st.session_state.total += 1
+    formula_correct, charge_correct = False, False
+
+    correct_formula, correct_charge = split_formula_charge(formula_full)
+
+    # Check formula
+    if formula_input.strip() == correct_formula:
+        formula_correct = True
+
+    # Check charge
+    if charge_input.strip() == correct_charge:
+        charge_correct = True
+
+    # Special case: bicarbonate name
+    if not st.session_state.ask_name_to_formula:
+        valid_names = [name.lower()]
+        if name.lower() == "bicarbonate":
+            valid_names.append("hydrogen carbonate")
+        if formula_input.lower() in valid_names:
+            formula_correct = True
+
+    # Points
+    points = 0
+    if formula_correct:
+        points += 0.5
+    if charge_correct:
+        points += 0.5
+
+    if points > 0:
+        st.session_state.score += points
+        st.session_state.streak += 1
+        st.success(f"✅ Correct! +{points} points")
+    else:
+        st.session_state.streak = 0
+        st.session_state.wrong_count += 1
+        st.error(f"❌ Incorrect! Formula: {correct_formula}, Charge: {correct_charge}")
+
+    if st.session_state.score > st.session_state.high_score:
+        st.session_state.high_score = st.session_state.score
+
+    if st.session_state.wrong_count >= st.session_state.max_wrong:
+        st.warning("💀 You reached maximum wrong answers! Game over.")
+        st.session_state.game_started = False
+        return
+
+    time.sleep(1)
+    new_question()
+    st.rerun()
+
+def start_timer(duration):
+    st.session_state.timer = duration
+    st.session_state.start_time = time.time()
+    st.session_state.time_up = False
+
+def check_timer():
+    if st.session_state.timer > 0 and st.session_state.start_time:
+        elapsed = time.time() - st.session_state.start_time
+        remaining = max(0, st.session_state.timer - elapsed)
+        st.write(f"⏱ Time remaining: {int(remaining)}s")
+        if remaining <= 0 and not st.session_state.time_up:
+            st.session_state.time_up = True
+            st.warning("⏰ Time's up!")
+            check_answer("", "")
+        return remaining
+    return 0
+
+# -----------------------
+# MENU
+# -----------------------
+def show_menu():
+    st.title("⚛️ Polyatomic Ion Study Platform")
+    st.write("Select a game mode, difficulty, and ions.")
+
+    st.session_state.mode = st.selectbox(
+        "Choose Game Mode",
+        ["Classic Random Quiz", "List Practice", "Rapid Fire"]
+    )
+    st.session_state.difficulty = st.selectbox(
+        "Difficulty / Timer",
+        ["None", "Easy (20s/q)", "Medium (10s/q)", "Hard (5s/q)"]
+    )
+    difficulty_times = {"None":0, "Easy (20s/q)":20, "Medium (10s/q)":10, "Hard (5s/q)":5}
+    start_timer(difficulty_times[st.session_state.difficulty])
+
+    select_ions()
+
+    if st.button("Start Game"):
+        if st.session_state.available_ions:
+            st.session_state.game_started = True
+            st.session_state.wrong_count = 0
+            new_question()
+        else:
+            st.warning("Select at least one ion!")
+
+# -----------------------
+# GAME UI
+# -----------------------
+def show_game():
+    if st.button("⬅ Back to Menu"):
+        st.session_state.game_started = False
+        st.session_state.score = 0
+        st.session_state.total = 0
+        st.session_state.streak = 0
+        st.session_state.hints_left = 3
+        st.session_state.current_question = None
+        st.session_state.question_id = 0
+        st.session_state.wrong_count = 0
+        return
+
+    st.write(f"**Score:** {st.session_state.score} | High Score: {st.session_state.high_score}")
+    st.write(f"**Streak:** {st.session_state.streak} | Wrong: {st.session_state.wrong_count}/{st.session_state.max_wrong}")
+
+    if st.session_state.timer > 0:
+        check_timer()
+
+    name, formula_full = st.session_state.current_question
+    correct_formula, correct_charge = split_formula_charge(formula_full)
+
+    if st.session_state.ask_name_to_formula:
+        st.subheader(f"What is the formula and charge for **{name}**?")
+    else:
+        st.subheader(f"What is the name and charge for **{correct_formula}**?")
+
+    with st.form(key=f"q_{st.session_state.question_id}"):
+        formula_input = st.text_input("Formula")
+        charge_input = st.text_input("Charge (e.g., -, 2-, 3-, 2+)")
+        submitted = st.form_submit_button("Submit")
+    if submitted:
+        check_answer(formula_input, charge_input)
+
+# -----------------------
+# MAIN
+# -----------------------
+if not st.session_state.game_started:
+    show_menu()
+else:
+    show_game()
