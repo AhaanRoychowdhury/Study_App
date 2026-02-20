@@ -31,31 +31,31 @@ polyatomic_ions = {
         "Cyanide": {"formula": "CN", "charge": "-"},
         "Thiocyanate": {"formula": "SCN", "charge": "-"}
     },
-    "2- Charge": {
-        "Carbonate": {"formula": "CO3", "charge": "2-"},
-        "Chromate": {"formula": "CrO4", "charge": "2-"},
-        "Dichromate": {"formula": "Cr2O7", "charge": "2-"},
-        "Oxalate": {"formula": "C2O4", "charge": "2-"},
-        "Silicate": {"formula": "SiO3", "charge": "2-"},
-        "Sulfate": {"formula": "SO4", "charge": "2-"},
-        "Sulfite": {"formula": "SO3", "charge": "2-"},
-        "Tartrate": {"formula": "C4H4O6", "charge": "2-"},
-        "Thiosulfate": {"formula": "S2O3", "charge": "2-"},
-        "Hydrogen Phosphate": {"formula": "HPO4", "charge": "2-"}
+    "-2 Charge": {
+        "Carbonate": {"formula": "CO3", "charge": "-2"},
+        "Chromate": {"formula": "CrO4", "charge": "-2"},
+        "Dichromate": {"formula": "Cr2O7", "charge": "-2"},
+        "Oxalate": {"formula": "C2O4", "charge": "-2"},
+        "Silicate": {"formula": "SiO3", "charge": "-2"},
+        "Sulfate": {"formula": "SO4", "charge": "-2"},
+        "Sulfite": {"formula": "SO3", "charge": "-2"},
+        "Tartrate": {"formula": "C4H4O6", "charge": "-2"},
+        "Thiosulfate": {"formula": "S2O3", "charge": "-2"},
+        "Hydrogen Phosphate": {"formula": "HPO4", "charge": "-2"}
     },
-    "3- Charge": {
-        "Phosphate": {"formula": "PO4", "charge": "3-"},
-        "Phosphite": {"formula": "PO3", "charge": "3-"},
-        "Arsenate": {"formula": "AsO4", "charge": "3-"}
+    "-3 Charge": {
+        "Phosphate": {"formula": "PO4", "charge": "-3"},
+        "Phosphite": {"formula": "PO3", "charge": "-3"},
+        "Arsenate": {"formula": "AsO4", "charge": "-3"}
     },
     "Miscellaneous": {
-        "Cadmium Ion": {"formula": "Cd", "charge": "2+"},
+        "Cadmium Ion": {"formula": "Cd", "charge": "+2"},
         "Silver Ion": {"formula": "Ag", "charge": "+"},
-        "Zinc Ion": {"formula": "Zn", "charge": "2+"},
+        "Zinc Ion": {"formula": "Zn", "charge": "+2"},
         "Ammonium": {"formula": "NH4", "charge": "+"},
-        "Mercury (I)": {"formula": "Hg2", "charge": "2+"},
-        "Mercury (II)": {"formula": "Hg", "charge": "2+"},
-        "Peroxide": {"formula": "O2", "charge": "2-"},
+        "Mercury (I)": {"formula": "Hg2", "charge": "+2"},
+        "Mercury (II)": {"formula": "Hg", "charge": "+2"},
+        "Peroxide": {"formula": "O2", "charge": "-2"},
         "Superoxide": {"formula": "O2", "charge": "-"},
         "Hydronium": {"formula": "H3O", "charge": "+"}
     }
